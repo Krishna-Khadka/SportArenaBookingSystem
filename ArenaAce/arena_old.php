@@ -1,0 +1,214 @@
+<?php
+session_start();
+session_regenerate_id(true);
+// if(!isset($_SESSION['LoginId'])){
+//     header("location: login.php");
+// }
+?>
+
+<?php
+require('config.php');
+$id = $_GET['id'];
+$sport = $_GET['sport'];
+
+// echo $id,$sport;
+?>
+
+<?php
+if (isset($_POST['search'])) {
+    $searchText = $_POST['search'];
+
+    $sql = "SELECT arena.a_id as id, arena.name as arena, arena.thumbnail as image, arena.address arena_address, sport.name as sport FROM arena INNER JOIN assign_sport ON (arena.a_id = assign_sport.arena_id) INNER JOIN sport ON (sport.s_id = assign_sport.sport_id) WHERE sport.name = '$sport' AND arena.name LIKE '%$searchText%'";
+    $result = mysqli_query($con, $sql) or die("Query failed");
+
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $arena_id = $row['id'];
+            $arena = $row['arena'];
+            $arena_address = $row['arena_address'];
+            $sport = $row['sport'];
+            $image = $row['image'];
+        }
+    } else {
+        echo "<h2 class='text-center text-white'>No matching arenas found</h2>";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arenas | Arena Ace</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/all.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        body {
+            background-color: #1d1d1d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar section starts -->
+
+    <?php include "navbar.php"; ?>
+
+    <!-- Navbar section ends -->
+
+    <!-- banner section starts -->
+
+    <!-- <section id="banner" style="background: linear-gradient(#000C,#000C),url(assets/images/contactbg.jpg);">
+        <div class="container">
+            <div class="banner-field text-center">
+                <h1>Our Arenas</h1>
+                <ul>
+                    <li><a href="index.php">Home</a></li>
+                    <li class="active"><a href="arena.php">Arenas</a></li>
+                </ul>
+            </div>
+        </div>
+    </section> -->
+
+    <!-- banner section ends -->
+
+    <!-- arena-nav section starts -->
+
+    <section id="arena-nav">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="arena-top d-flex justify-content-between align-items-center">
+                        <div class="arena-left">
+                            <h2>Discover and book top
+                                <?= $sport; ?> arena
+                            </h2>
+                        </div>
+                        <div class="arena-right">
+                            <div class="input-group rounded">
+                                <input type="search" name="a_search" id="a_search" class="form-control rounded"
+                                    placeholder="Search by arena name" aria-label="Search"
+                                    aria-describedby="search-addon" />
+                                <span class="input-group-text border-0" id="search-addon">
+                                    <button type="button" class="btn btn-primary">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- arena-nav section ends -->
+
+    <!-- arena section starts -->
+
+    <section id="arena">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="title text-center">
+                        <h2 class="heading">
+                            <?= $sport; ?> arena
+                        </h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <?php
+                include "config.php";
+                $sql = "select arena.a_id as id,arena.name as arena,arena.thumbnail as image,arena.address arena_address,sport.name as sport from arena inner join assign_sport on (arena.a_id = assign_sport.arena_id) inner join sport on (sport.s_id = assign_sport.sport_id) where sport.name = '$sport'";
+                $result = mysqli_query($con, $sql) or die("Query failed");
+                if (mysqli_num_rows($result) > 0) {
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        $arena_id = $row['id'];
+                        $arena = $row['arena'];
+                        $arena_address = $row['arena_address'];
+                        $sport = $row['sport'];
+                        $image = $row['image'];
+                        ?>
+                        <div class="col-lg-4">
+                            <a href="venue.php?arena_id=<?= $arena_id ?>">
+                                <div class="arena-box">
+                                    <div class="thumbnail">
+                                        <img src="<?php echo 'admin/assets/upload/' . $image; ?>"
+                                            class="img-fluid rounded-start" height="100px" width="100px" alt="">
+                                        <div class="thumb-text">
+                                            <h6>Bookable</h6>
+                                        </div>
+                                    </div>
+                                    <div class="arena-body">
+                                        <div class="arena-name">
+                                            <h6>
+                                                <?php echo $arena ?>
+                                            </h6>
+                                        </div>
+                                        <p class="address">
+                                            <?php echo $arena_address ?>
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    <?php }
+                } else {
+                    echo "<h2 class='text-center text-white'>Sorry!! no arena available for selected sport</h2>";
+                }
+                ?>
+            </div>
+    </section>
+
+    <!-- arena section ends -->
+
+
+
+
+    <!-- Footer section starts -->
+
+    <?php include "footer.php"; ?>
+
+    <!-- Footer section ends -->
+
+
+
+
+
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener("scroll", function () {
+            var nav = document.querySelector("nav");
+            nav.classList.toggle("sticky", window.scrollY > 0);
+        })
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Function to perform AJAX search
+            function performSearch() {
+                var searchText = $("#a_search").val(); // Get the search input value
+                $.ajax({
+                    url: "search.php", // Create a separate PHP file for handling the search
+                    method: "POST",
+                    data: { search: searchText },
+                    success: function (response) {
+                        $("#arena .row").html(response); // Update the arena list with search results
+                    }
+                });
+            }
+
+            // Execute the search when the user types in the search input
+            $("#a_search").on("keyup", function () {
+                performSearch();
+            });
+        });
+    </script>
+</body>
+
+</html>
